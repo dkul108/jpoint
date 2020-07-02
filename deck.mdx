@@ -1,0 +1,1518 @@
+import {
+  CodeSurfer,
+  CodeSurferColumns,
+  Step,
+} from "code-surfer";
+
+import { github, vsDark, dracula } from "@code-surfer/themes";
+export const theme = vsDark;
+
+<!--
+import { dark } from 'mdx-deck/themes'
+export const theme = dark;
+-->
+
+import {
+  Image,
+  Appear,
+  Split,
+} from 'mdx-deck';
+
+import {
+  Red
+} from './components.js'
+
+
+# Dynamic Constants
+
+## <Red>Oxymoron or promising JVM feature?</Red>
+
+### #JPoint2020
+
+##### 👋 Evgeny Mandrikov 🐦 @\_Godin\_
+
+---
+
+
+import sonarsource_image from './images/sonarsource.png'
+
+<div style={{height: '100%'}}>
+
+<center><img style={{width: '60%'}} src={sonarsource_image} /></center>
+
+<CodeSurfer>
+
+```js
+/* TODO Don't forget to add huge disclaimer
+ * that all opinions hereinbelow are my own
+ * and not my employer's.
+ *
+ * They can only dream that they own them.
+ */
+```
+
+</CodeSurfer>
+
+</div>
+
+<!---
+
+import jacoco_history_image from './images/jacoco_history.png'
+
+<img src={jacoco_history_image} />
+-->
+
+---
+
+import bugs_image from './images/bugs.png'
+
+import jacoco_bug_image from './images/jacoco_bug.png'
+
+# JaCoCo
+
+## Tested on 11 and ½ JDKs
+
+### from version 5 up to 16 EA
+
+---
+
+<img style={{width: '60%'}} src={jacoco_bug_image} />
+
+---
+
+<img style={{width: '80%'}} src={bugs_image} />
+
+---
+
+## Real Disclaimer
+
+import esrb_image from './images/esrb.jpg'
+
+<img src={esrb_image} /><br/>
+
+<ul>
+<Appear>
+<li><Red>Blood</Red> of JVM</li>
+<li><Red>Naked</Red> javac</li>
+<li><Red>Strong language</Red> - bytecode</li>
+<li><Red>Intence violence</Red> of your brain</li>
+</Appear>
+</ul>
+
+---
+
+## Ready ?
+
+---
+
+<CodeSurfer>
+
+```js title="invokedynamic aka INDY"
+class LambdaExample {
+  void run(Runnable runnable) { }
+
+  void fun() {
+    run(() -> {
+      System.out.println("Hello, JPoint 2020!");
+    });
+  }
+}
+```
+
+```diff 5[9:15],6,7[5] title="invokedynamic aka INDY" subtitle="lambda"
+```
+
+```diff title="invokedynamic aka INDY" subtitle="javac LambdaExample.java"
+
+```
+
+```js title="invokedynamic aka INDY" subtitle="javap -v -p LambdaExample.class"
+  void example();
+    descriptor: ()V
+    flags: (0x0000)
+    Code:
+      stack=2, locals=1, args_size=1
+         0: aload_0
+         1: invokedynamic #7,  0 // InvokeDynamic #0:run:()Ljava/lang/Runnable;
+         6: invokevirtual #11    // Method run:(Ljava/lang/Runnable;)V
+         9: return
+
+  private static void lambda$example$0();
+    descriptor: ()V
+    flags: (0x100a) ACC_PRIVATE, ACC_STATIC, ACC_SYNTHETIC
+    Code:
+      stack=2, locals=0, args_size=0
+         0: getstatic     #16   // Field java/lang/System.out:Ljava/io/PrintStream;
+         3: ldc           #22   // String Hello, JPoint 2020!
+         5: invokevirtual #24   // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+         8: return
+}
+BootstrapMethods:
+  0: #37 REF_invokeStatic java/lang/invoke/LambdaMetafactory.metafactory:
+         (Ljava/lang/invoke/MethodHandles$Lookup;
+          Ljava/lang/String;Ljava/lang/invoke/MethodType;
+          Ljava/lang/invoke/MethodType;
+          Ljava/lang/invoke/MethodHandle;
+          Ljava/lang/invoke/MethodType;
+         )Ljava/lang/invoke/CallSite;
+    Method arguments:
+      #44 ()V
+      #45 REF_invokeStatic Lambda.lambda$example$0:()V
+      #44 ()V
+```
+
+```diff 7 title="invokedynamic aka INDY" subtitle="invokedynamic instruction"
+```
+
+```diff 21:32 title="invokedynamic aka INDY" subtitle="bootstrap method"
+```
+
+```diff 22[10:72] title="invokedynamic aka INDY" subtitle="java.lang.invoke.LambdaMetafactory"
+```
+
+```diff 28 title="invokedynamic aka INDY" subtitle="returns CallSite that holds MethodHandle"
+```
+
+```diff 11:19,31 title="inokedynamic aka INDY" subtitle=""
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```js title="INDY for constants?"
+void someMethod() {
+  invokedynamic constantBootstrap
+}
+
+static CallSite constantBootstrap(…) {
+  MethodHandle target = …;
+  return new ConstantCallSite(target);
+}
+```
+
+```js 7:8 title="INDY for constants?"
+void someMethod() {
+  invokedynamic constantBootstrap
+}
+
+static CallSite constantBootstrap(…) {
+  MethodHandle target = …;
+  // ConstantCallSite allocation overhead:
+  return new ConstantCallSite(target);
+}
+```
+
+```js 2:3 title="INDY for constants?"
+void someMethod() {
+  // MethodHandle invocation overhead:
+  invokedynamic constantBootstrap
+}
+
+static CallSite constantBootstrap(…) {
+  MethodHandle target = …;
+  // ConstantCallSite allocation overhead:
+  return new ConstantCallSite(target);
+}
+```
+
+```diff 1:10 title="INDY for constants?"
+```
+
+```js title="Java 11 (JEP 309): Dynamic Class-File Constants"
+// aka CONDY
+```
+
+```js title="Java 11 (JEP 309): Dynamic Class-File Constants"
+/* CONDY resolves to the constant - less overhead */
+```
+
+```js 1:5 title="Java 11 (JEP 309): Dynamic Class-File Constants"
+/* CONDY resolves to the constant - less overhead */
+
+/* JIT doesn't trust final fields,
+   but trusts constant pool entries */
+```
+
+```js 1:7 title="Java 11 (JEP 309): Dynamic Class-File Constants"
+/* CONDY resolves to the constant - less overhead */
+
+/* JIT doesn't trust final fields,
+   but trusts constant pool entries */
+
+/* two INDY instructions have different linkage state,
+   but two CONDY share linkage state */
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```js title="Original class"
+class Example {
+  void example() {
+    …  // original code
+  }
+}
+```
+
+```js title="Original class"
+class Example {
+  void example() {
+    if (…) {             // part of original code
+      …                  //
+    } else {
+      …                  // another part of original code
+    }
+  }
+}
+```
+
+```js title="Instrumented class"
+class Example {
+  void example() {
+    …                    // probe 0 = method is executed
+
+    if (…) {             // part of original code
+      …                  //
+
+      …                  // probe 1 = true-branch is executed
+    } else {
+      …                  // another part of original code
+
+      …                  // probe 2 = false-branch is executed
+    }
+  }
+}
+```
+
+```diff 3,8,12 title="Probe?" subtitle="minimal runtime overhead, no side effects on application, thread safe, record execution, identifiable"
+
+```
+
+```js title="Probe!"
+class Example {
+  void example() {
+    boolean[] probes;
+    probes[0] = true;    // method is executed
+
+    if (…) {             // part of original code
+      …                  //
+
+      probes[1] = true;  // true-branch is executed
+    } else {
+      …                  // another part of original code
+
+      probes[2] = true;  // false-branch is executed
+    }
+  }
+}
+```
+
+```diff 3 title="Probes?"
+
+```
+
+```js title="Instrumented class"
+class org.jacoco.Agent {
+  synchronized boolean[] getProbes(…);
+}
+
+class Example {
+  synthetic static final boolean[] $jacocoData;
+
+  static {
+    $jacocoData = org.jacoco.Agent.getProbes(
+      "org/example/Instrumented",  // className
+      0xCAFEBABE,                  // classId
+      3                            // probesCount
+    );
+  }
+
+  void example() {
+    boolean[] probes = $jacocoData;
+    probes[0] = true;    // method is executed
+
+    if (…) {             // part of original code
+      …                  //
+
+      probes[1] = true;  // true-branch is executed
+    } else {
+      …                  // another part of original code
+
+      probes[2] = true;  // false-branch is executed
+    }
+  }
+}
+```
+
+</CodeSurfer>
+
+---
+
+import enjoy_hardcore_image from './images/enjoy_hardcore.jpg'
+
+<Image src={enjoy_hardcore_image} />
+
+---
+
+<CodeSurfer>
+
+```js
+class Child {
+  void someMethod() {
+    assert 1 == 2;  // AssertionError ?
+  }
+}
+
+public static void main(String[] args) {
+  new Child().someMethod();
+}
+```
+
+```js
+class Base {
+  static {
+    new Child().someMethod();
+  }
+}
+
+class Child extends Base {
+  void someMethod() {
+    assert 1 == 2;  // AssertionError ?
+  }
+}
+
+public static void main(String[] args) {
+  new Child();
+}
+```
+
+```diff 1:15
+
+```
+
+```js
+class Base {
+  static {
+    new Child().someMethod();
+  }
+}
+
+class Child extends Base {
+  void someMethod() {
+    /* Java Language Specification 8, §14.10:
+       An assert statement that is executed
+       before its class or interface
+       has completed initialization is enabled */
+    assert 1 == 2;  // AssertionError !
+  }
+}
+
+public static void main(String[] args) {
+  new Child();
+}
+```
+
+```js
+class Base {
+  static {
+    new Child().someMethod();
+  }
+}
+
+class Child extends Base {
+  synthetic static final boolean $assertionsDisabled;
+
+  static {
+    $assertionsDisabled = Child.class.desiredAssertionStatus();
+  }
+
+  void someMethod() {
+    /* Java Language Specification 8, §14.10:
+       An assert statement that is executed
+       before its class or interface
+       has completed initialization is enabled */
+    if (!$assertionsDisabled)        // assert 1 == 2;
+      if (1 != 2)                    //
+        throw new AssertionError();  //
+  }
+}
+
+public static void main(String[] args) {
+  new Child();
+}
+```
+
+```diff 1:26
+
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```js
+import org.objectweb.asm.*;
+
+Handle ConstantBootstraps_invoke = new Handle(
+  Opcodes.H_INVOKESTATIC,
+  "java/lang/invoke/ConstantBootstraps",
+  "invoke",
+  MethodType.methodType(
+    Object.class,
+    MethodHandles.Lookup.class,
+    String.class,
+    Class.class,
+    MethodHandle.class,
+    Object[].class
+  ).toMethodDescriptorString(),
+  false
+);
+
+Handle Class_desiredAssertionStatus = new Handle(
+  Opcodes.H_INVOKEVIRTUAL,
+  "java/lang/Class",
+  "desiredAssertionStatus",
+  MethodType.methodType(
+    boolean.class
+  ).toMethodDescriptorString(),
+  false
+);
+
+mv.visitLdcInsn(new ConstantDynamic(
+  "$assertionsDisabled",
+  "Z",
+  ConstantBootstraps_invoke,
+  Class_desiredAssertionStatus,
+  Type.getType("LChild;")
+));
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```js 1:16
+class Base {
+  static {
+    new Child().someMethod();
+  }
+}
+
+class Child extends Base {
+  synthetic static final boolean[] $jacocoData;
+
+  static {
+    $jacocoData = org.jacoco.Agent.getProbes(…);
+  }
+
+  void someMethod() {
+    var probes = $jacocoData;
+    probes[0] = true;
+    …
+```
+
+```diff 16 subtitle="will throw NullPointerException :("
+
+```
+
+```js 2:9,12 subtitle="lazy initialization instead of static"
+class Child extends Base {
+  synthetic static final boolean[] $jacocoData;
+
+  synthetic static boolean[] $jacocoInit() {
+    if ($jacocoData == null) {
+      $jacocoData = org.jacoco.Agent.getProbes(…);
+    }
+    return $jacocoData;
+  }
+
+  void somemethod() {
+    var probes = $jacocoInit();
+    probes[0] = true;
+    …
+```
+
+```js 1:13 subtitle="lazy initialization instead of static"
+class org.jacoco.Agent {
+  synchronized boolean[] getProbes(…);
+}
+
+class Child extends Base {
+  synthetic static final boolean[] $jacocoData;
+
+  synthetic static boolean[] $jacocoInit() {
+    if ($jacocoData == null) {
+      $jacocoData = org.jacoco.Agent.getProbes(…);
+    }
+    return $jacocoData;
+  }
+
+  void somemethod() {
+    var probes = $jacocoInit();
+    probes[0] = true;
+    …
+```
+
+```diff 10 subtitle="throws IllegalAccessError since OpenJDK 9 EA b127"
+
+```
+
+```js 2[12:24],4[30:42],6:12 subtitle="checked since OpenJDK 9 EA b127"
+class Child extends Base {
+  synthetic static final boolean[] $jacocoData;
+
+  synthetic static boolean[] $jacocoInit() {
+    if ($jacocoData == null) {
+      /* Java Virtual Machine Specification, §6.5 putstatic:
+         if the field is final,
+         it must be declared in the current class,
+         and the instruction must occur
+         in the <clinit> method of the current class.
+         Otherwise, an IllegalAccessError is thrown */
+      $jacocoData = …
+    }
+    return $jacocoData;
+  }
+
+  void someMethod() {
+    var probes = $jacocoInit();
+    probes[0] = true;
+    …
+```
+
+```js title="" subtitle="let's remove final ?"
+class Child extends Base {
+  synthetic static boolean[] $jacocoData;
+
+  synthetic static boolean[] $jacocoInit() {
+    if ($jacocoData == null) {
+      $jacocoData = …
+    }
+    return $jacocoData;
+  }
+
+  void someMethod() {
+    var probes = $jacocoInit();
+    probes[0] = true;
+    …
+```
+
+```js title="" subtitle="what about interfaces with default methods ?"
+interface Base {
+}
+
+interface Child extends Base {
+  /* implicitly static final */ boolean[] $jacocoData
+  /* so require static initializer: */
+  static {
+    $jacocoData = …;
+  }
+
+  default void someMethod() {
+    var probes = $jacocoData;
+    probes[0] = true;  // NPE ?
+    …
+  }
+}
+```
+
+```js title=""
+interface Base {
+}
+
+interface Child extends Base {
+}
+```
+
+```js title=""
+interface Base {
+  /* Java Language Specification, §12.4.1:
+     When a class is initialized, its superclasses are initialized,
+     as well as any superinterfaces that declare any default methods. */
+  default void base() {}
+}
+
+interface Child extends Base {
+}
+```
+
+```js title=""
+interface Base {
+  /* Java Language Specification, §12.4.1:
+     When a class is initialized, its superclasses are initialized,
+     as well as any superinterfaces that declare any default methods. */
+  default void base() {}
+
+  Object o = new Child(){}.someMethod();
+}
+
+interface Child extends Base {
+  default Object someMethod() {
+    throw new AssertionError("base");
+  }
+}
+```
+
+```js title=""
+interface Base {
+  /* Java Language Specification, §12.4.1:
+     When a class is initialized, its superclasses are initialized,
+     as well as any superinterfaces that declare any default methods. */
+  default void base() {}
+
+  Object o = new Child(){}.someMethod();
+}
+
+interface Child extends Base {
+  default Object someMethod() {
+    throw new AssertionError("base");
+  }
+
+  Object o = new Object() { { System.out.println("child"); } };
+}
+```
+
+```js title=""
+interface Base {
+  /* Java Language Specification, §12.4.1:
+     When a class is initialized, its superclasses are initialized,
+     as well as any superinterfaces that declare any default methods. */
+  default void base() {}
+
+  Object o = new Child(){}.someMethod();
+}
+
+interface Child extends Base {
+  default Object someMethod() {
+    throw new AssertionError("base");
+  }
+
+  Object o = new Object() { { System.out.println("child"); } };
+}
+
+public static void main(String[] args) {
+  /* Java Language Specification, §12.4.1:
+     A class or interface type T will be initialized immediately before
+     the first occurrence of any one of the following:
+     …an instance of T is created…
+     …static method declared by T is invoked… */
+  new Child() { };  // or Child.someStatic();
+}
+```
+
+```diff subtitle="base ? &nbsp; &nbsp; child&rarr;base ?"
+```
+
+```diff subtitle="base &lt; JDK 8u40"
+
+```
+
+```diff subtitle="JDK 8u40 &le; child&rarr;base&rarr;crash &lt; JDK8u152 EA"
+
+```
+
+```diff subtitle="JDK 8u40 &le; base &lt; JDK8u152 EA"
+
+```
+
+```diff subtitle="JDK 8u152 EA &le; child&rarr;base"
+
+```
+
+
+```js title=""
+interface Child extends Base {
+  /* implicitly static final */ synthetic boolean[] $jacocoData;
+
+  static {
+    $jacocoData = …getProbes(…);
+  }
+
+  synthetic static boolean[] $jacocoInit() {
+    return $jacocoData == null
+      ? …getProbes(…)  // slow path for JDK < 8u152
+      : $jacocoData;
+  }
+
+  default void someMethod() {
+    var probes = $jacocoInit();
+    probes[0] = true;
+    …
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```js title="JaCoCo" subtitle="remember ?"
+class Child extends Base {
+  synthetic static boolean[] $jacocoData;
+
+  synthetic static boolean[] $jacocoInit() {
+    if ($jacocoData == null) {
+      $jacocoData = org.jacoco.Agent.getProbes(…);
+    }
+    return $jacocoData;
+  }
+
+  void someMethod() {
+    var probes = $jacocoInit();
+    probes[0] = true;
+    …
+  }
+
+  void someOtherMethod() {
+    var probes = $jacocoInit();
+    probes[…] = true;
+    …
+  }
+}
+```
+
+```js title="JaCoCo" subtitle="condy !"
+class Child extends Base {
+  synthetic static boolean[] $jacocoInit(
+    java.lang.invoke.MethodHandles.Lookup caller,
+    java.lang.String name,
+    java.lang.Class type
+  ) {
+    return org.jacoco.Agent.getProbes(…);
+  }
+
+  void someMethod() {
+    boolean[] probes = /* LDC $jacocoInit */;
+    probes[0] = true;
+    …
+  }
+
+  void someOtherMethod() {
+    boolean[] probes = /* LDC $jacocoInit */;
+    probes[…] = true;
+    …
+  }
+}
+```
+
+```diff title="JaCoCo" subtitle="no more synthetic field !"
+
+```
+
+```diff title="JaCoCo" subtitle="less overhead !"
+
+```
+
+```diff 11,17 title="JaCoCo" subtitle="JDK-8228485: JVM crash due to CONDY of array type"
+
+```
+
+```diff 11,17 title="JaCoCo" subtitle="JDK-8228485: found and fixed in OpenJDK 13"
+
+```
+
+```diff 11,17 title="JaCoCo" subtitle="JDK-8228485: backported to 11.0.4, 12.0.2"
+
+```
+
+```js 2,11,17 title="JaCoCo" subtitle="JDK-8228485: workaround - use Object for CONDY, followed by CHECKCAST"
+class Child extends Base {
+  synthetic static Object $jacocoInit(
+    java.lang.invoke.MethodHandles.Lookup caller,
+    java.lang.String name,
+    java.lang.Class type
+  ) {
+    return …getProbes(…);
+  }
+
+  void someMethod() {
+    boolean[] probes = (boolean[]) /* LDC $jacocoInit */;
+    probes[0] = true;
+    …
+  }
+
+  void someOtherMethod() {
+    var probes = (boolean[]) /* LDC $jacocoInit */;
+    probes[…] = true;
+    …
+  }
+}
+```
+
+```diff 7 title="JaCoCo" subtitle="JDK-8228485: JVM crashes when bootstrap method for CONDY triggers loading of class whose static initializer throws exception"
+
+```
+
+```diff 7 title="JaCoCo" subtitle="JDK-8228485: found and fixed in OpenJDK 14"
+
+```
+
+```diff 7 title="JaCoCo" subtitle="JDK-8228485: backported to 11.0.5, 13.0.1"
+
+```
+
+```diff 7 title="JaCoCo" subtitle="JDK-8228485: workaround - do not throw exceptions ;)"
+
+```
+
+```diff 7 title="JaCoCo" subtitle="JDK-8228485: workaround - do not throw exceptions ;) actually we got rid of static initializer"
+
+```
+
+```diff title="JaCoCo" subtitle="https://github.com/eclipse/openj9/issues/5895 OpenJ9 JVM crashes due to missing GC barrier"
+
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```js title="Non-capturing lambdas"
+void m1() {
+  …
+  Predicate<String> p1 = String::isEmpty();
+  …
+}
+
+void m2() {
+  …
+  Predicate<String> p2 = String::isEmpty();
+  …
+}
+```
+
+```diff 3,9 title="Non-capturing lambdas" subtitle="same bootstrap method, but two indy instructions, replaceable by shared condy"
+
+```
+
+</CodeSurfer>
+
+---
+
+<!--
+https://twitter.com/_godin_/status/1206887029583360000
+-->
+import twitter_image from './images/twitter.png'
+
+<div style={{height: '90%'}}>
+
+<center>
+<img src={twitter_image} />
+</center>
+
+<CodeSurfer>
+
+```js
+enum E {
+  C1,
+  C2,
+  // how much more is possible?
+}
+```
+
+</CodeSurfer>
+
+</div>
+
+---
+
+<CodeSurfer>
+
+```js title="Enum constants"
+enum E {
+  C1,
+  C2,
+  // how much more is possible?
+}
+```
+
+```diff title="Enum constants" subtitle="Answer bigger than 8191 shared in twitter ;)"
+
+```
+
+```diff title="Enum constants" subtitle="javac E.java"
+
+```
+
+```js title="Enum constants" subtitle="javap -v -p E.class"
+final class E extends java.lang.Enum<E>
+  minor version: 0
+  major version: 58
+{
+  public static final E C1;
+    descriptor: LE;
+    flags: (0x4019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL, ACC_ENUM
+
+  public static final E C2;
+    descriptor: LE;
+    flags: (0x4019) ACC_PUBLIC, ACC_STATIC, ACC_FINAL, ACC_ENUM
+
+  private static final E[] $VALUES;
+    descriptor: [LE;
+    flags: (0x101a) ACC_PRIVATE, ACC_STATIC, ACC_FINAL, ACC_SYNTHETIC
+
+  public static E[] values();
+    descriptor: ()[LE;
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=1, locals=0, args_size=0
+         0: getstatic     #1  // Field $VALUES:[LE;
+         3: invokevirtual #7  // Method "[LE;".clone:()Ljava/lang/Object;
+         6: checkcast     #8  // class "[LE;"
+         9: areturn
+
+  public static E valueOf(java.lang.String);
+    descriptor: (Ljava/lang/String;)LE;
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: ldc           #2  // class E
+         2: aload_0
+         3: invokestatic  #12
+            // Method java/lang/Enum.valueOf:(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;
+         6: checkcast     #2  // class E
+         9: areturn
+
+  private E();
+    descriptor: (Ljava/lang/String;I)V
+    flags: (0x0002) ACC_PRIVATE
+    Code:
+      stack=3, locals=3, args_size=3
+         0: aload_0
+         1: aload_1
+         2: iload_2
+         3: invokespecial #18  // Method java/lang/Enum."<init>":(Ljava/lang/String;I)V
+         6: return
+
+  static {};
+    descriptor: ()V
+    flags: (0x0008) ACC_STATIC
+    Code:
+      stack=4, locals=0, args_size=0
+         0: new           #2   // class E
+         3: dup
+         4: ldc           #22  // String C1
+         6: iconst_0
+         7: invokespecial #24  // Method "<init>":(Ljava/lang/String;I)V
+        10: putstatic     #25  // Field C1:LE;
+        13: new           #2   // class E
+        16: dup
+        17: ldc           #28  // String C2
+        19: iconst_1
+        20: invokespecial #24  // Method "<init>":(Ljava/lang/String;I)V
+        23: putstatic     #30  // Field C2:LE;
+        26: iconst_2
+        27: anewarray     #2   // class E
+        30: dup
+        31: iconst_0
+        32: getstatic     #25 // Field C1:LE;
+        35: aastore
+        36: dup
+        37: iconst_1
+        38: getstatic     #30 // Field C2:LE;
+        41: aastore
+        42: putstatic     #1  // Field $VALUES:[LE;
+        45: return
+}
+```
+
+```diff 5:11 title="Enum constants" subtitle=""
+
+```
+
+```diff 13:15 title="Enum constants" subtitle=""
+
+```
+
+```diff 17:25 title="Enum constants" subtitle="return \$VALUES.clone()"
+
+```
+
+```diff 50:79 title="Enum constants" subtitle="static initializer"
+
+```
+
+```js 1:26 title="Enum constants"
+class E extends Enum {
+  public static final E C1;
+
+  public static final E C2;
+
+  private static final E[] $VALUES;
+
+  static {
+    C1 = new E("C1", 1);
+    C2 = new E("C2", 2);
+    VALUES = new E[2];
+    VALUES[0] = C1;
+    VALUES[1] = C2;
+  }
+
+  private E(String name, int ordinal) {
+    super(name, ordinal);
+  }
+
+  public E[] values() {
+    return VALUES.clone();
+  }
+
+  public E valueOf(String name) {
+    return Enum.valueOf(E.class, name);
+  }
+}
+```
+
+```diff 9,10 title="Enum constants" subtitle="condy ! using java.lang.invoke.ConstantBootstraps"
+
+```
+
+```diff 11:13 title="Enum constant" subtitle="also can be condy !"
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```js title="Enum switch"
+enum E {
+  TRUE,
+  FALSE,
+}
+
+class Example {
+  String fun(E e) {
+    return switch (e) {
+      case TRUE -> "1";
+      case FALSE -> "0";
+    };
+  }
+}
+```
+
+```diff title="Enum switch" subtitle="javac --release 14 Example.java"
+
+```
+
+```js title="Enum switch" subtitle="javap -v -p Example.class"
+class Example
+  minor version: 0
+  major version: 58
+{
+  java.lang.String fun(E);
+    descriptor: (LE;)Ljava/lang/String;
+    flags: (0x0000)
+    Code:
+      stack=2, locals=1, args_size=1
+         0: getstatic     #7  // Field Example$1.$SwitchMap$E:[I
+         3: aload_0
+         4: invokevirtual #13 // Method E.ordinal:()I
+         7: iaload
+         8: lookupswitch  { // 2
+                       1: 36
+                       2: 41
+                 default: 46
+            }
+        36: ldc           #19 // String 1
+        38: goto          54
+        41: ldc           #21 // String 0
+        43: goto          54
+        46: new           #23 // class java/lang/IncompatibleClassChangeError
+        49: dup
+        50: invokespecial #25 // Method java/lang/IncompatibleClassChangeError."<init>":()V
+        53: athrow
+        54: areturn
+```
+
+```diff 1:3 title="Enum switch" subtitle="Java 14"
+
+```
+
+```diff 14:17 title="Enum switch" subtitle="switch"
+
+```
+
+```diff 10:13 title="Enum switch" subtitle="switch by Example\$1.$SwitchMap\$E[e.ordinal())] !?"
+
+```
+
+```js title="Enum switch" subtitle="javap -v -p Example\$1.class"
+class Example$1
+  minor version: 0
+  major version: 58
+{
+  static final int[] $SwitchMap$E;
+    descriptor: [I
+    flags: (0x1018) ACC_STATIC, ACC_FINAL, ACC_SYNTHETIC
+
+  static {};
+    descriptor: ()V
+    flags: (0x0008) ACC_STATIC
+    Code:
+      stack=3, locals=1, args_size=0
+         0: invokestatic  #1  // Method E.values:()[LE;
+         3: arraylength
+         4: newarray      int
+         6: putstatic     #7  // Field $SwitchMap$E:[I
+         9: getstatic     #7  // Field $SwitchMap$E:[I
+        12: getstatic     #13 // Field E.TRUE:LE;
+        15: invokevirtual #17 // Method E.ordinal:()I
+        18: iconst_1
+        19: iastore
+        20: goto          24
+        23: astore_0
+        24: getstatic     #7  // Field $SwitchMap$E:[I
+        27: getstatic     #23 // Field E.FALSE:LE;
+        30: invokevirtual #17 // Method E.ordinal:()I
+        33: iconst_2
+        34: iastore
+        35: goto          39
+        38: astore_0
+        39: return
+```
+
+```js 1:13 title="Enum switch"
+class Example$1 {
+  static final int[] $SwitchMap$E;
+
+  static {
+    $SwitchMap$E = new int[E.values().length];
+
+    try {
+      $SwitchMap$E[E.TRUE.ordinal()] = 1;
+    } catch (NoSuchFieldError ignore) {}
+
+    try {
+      $SwitchMap$E[E.FALSE.ordinal()] = 2;
+    } catch (NoSuchFieldError ignore) {}
+  }
+}
+```
+
+```js title="Enum switch"
+class Example {
+  String fun(E e) {
+    switch (Example$1.$SwitchMap$E[e.ordinal]) { // switch (e) {
+      case 1: return "1";                        //   case TRUE -> return "1";
+      case 2: return "0";                        //   case FALSE -> return "0";
+      default:
+        throw new IncompatibleClassChangeError();
+    }
+  }
+}
+```
+
+<!--
+https://youtrack.jetbrains.com/issue/KT-31613
+https://bugs.openjdk.java.net/browse/JDK-8219412
+https://bugs.openjdk.java.net/browse/JDK-8169526
+--->
+```js title="Enum switch"
+enum X {
+    A(Y.B);
+
+    X(Y y) {
+        switch (y) {
+            case B: break;
+        }
+    }
+
+    public void neverCall(X x) {
+        switch (x) {
+            case A: break;
+        }
+    }
+}
+
+enum Y {
+    B;
+
+    public static void main(String[] args) {
+        System.out.println(X.A);
+    }
+}
+```
+
+```js title="Enum switch"
+/*
+
+Exception in thread "main" java.lang.ExceptionInInitializerError
+        at X.<init>(Example.java:5)
+        at X.<clinit>(Example.java:2)
+        at Y.main(Example.java:21)
+Caused by: java.lang.NullPointerException
+        at X.values(Example.java:1)
+        at X$1.<clinit>(Example.java:11)
+        ... 3 more
+
+*/
+```
+
+```js title="Enum switch"
+enum X {
+    A(Y.B);
+
+    X(Y y) {
+        switch (y) { // ExceptionInInitializerError
+            case B: break;
+        }
+    }
+
+    public void neverCall(X x) {
+        switch (x) { // Caused by NullPointerException in X.values()
+            case A: break;
+        }
+    }
+}
+
+enum Y {
+    B;
+
+    public static void main(String[] args) {
+        System.out.println(X.A);
+    }
+}
+```
+
+```js title="Enum switch" subtitle="someone said no NullPointerException in Kotlin ? ;)"
+enum class X(y: Y) {
+  A(Y.B);
+
+  init {
+    when(y) { Y.B -> {} }
+  }
+
+  fun neverCall(x: X) {
+    when(x) { X.A -> {} }
+  }
+}
+
+enum class Y() {
+  B
+}
+
+fun main(args: Array<String>) {
+  print(X.A)
+}
+```
+
+```js title="Enum switch"
+class X {
+  static final X A;
+  static final X[] $VALUES;
+
+  static { // <clinit>
+    X.A = new X(0, "A", Y.B); // at Example.java:2
+    $VALUES = new X[] { X.A };
+  }
+
+  X(Y y) { // <init>
+    switch (X$1.$SwitchMap$Y[y.ordinal()]) { // at Example.java:5
+      case B: break;
+    }
+  }
+
+  X[] values() {
+    return $VALUES.clone(); // NPE at Example.java:1
+  }
+}
+
+class X$1 {
+  static final int[] $SwitchMap$Y;
+  static final int[] $SwitchMap$X;
+
+  static { // <clinit>
+    $SwitchMap$X = new int[X.values().length]; // at Example.java:11
+    try {                                      // due to switch by enum in neverCall
+      $SwitchMap$X[X.A.ordinal()] = 1;         //
+    } catch (NoSuchFieldError ignore) {}       //
+
+    $SwitchMap$Y = new int[Y.values().length];
+    try {
+      $SwitchMap$Y[Y.B.ordinal()] = 1;
+    } catch (NoSuchFieldError ignore) {}
+  }
+}
+```
+
+```diff 5:6
+```
+
+```diff 10:11
+```
+
+```diff 25:26
+```
+
+```diff 16:17
+```
+
+```diff 6:7,17
+```
+
+```js title="Enum switch" subtitle="new bootstrap method for condy ?"
+  static int[] initEnumMappingArray(
+    MethodHandles.Lookup caller, // lookup context describing the class performing the operation
+    String name,                 // name of the constant to return
+    Class<?> type,               // expected type of constant
+    Class enumClass,             // Class object describing the enum type
+    String... enumNamesInSwitch  // names of enum constants in switch
+  ) {
+    int length = enumClass.getEnumConstants().length;
+    int[] mapping = new int[length];
+    for (int i = 0; i < enumNames.length; i++) {
+      try {
+        Enum<?> enumValue = Enum.valueOf(enumClass, enumNamesInSwitch[i]);
+        mapping[enumValue.ordinal()] = i + 1;
+      } catch (IllegalArgumentException ignore) {
+      }
+    }
+    return mapping;
+  }
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```js title="Good singleton factory"
+// How?
+```
+
+```js title="Good singleton factory" subtitle="static final"
+class Singleton {
+  public static final Singleton INSTANCE = new Singleton();
+}
+```
+
+```js title="Good singleton factory" subtitle="Synchronized accessor"
+class Singleton {
+  private static Singleton instance;
+
+  public static Singleton getInstance() {
+    synchronized (this) {
+      if (instance == null) {
+        instance = new Singleton();
+      }
+      return instance;
+    }
+  }
+}
+```
+
+```js title="Good singleton factory" subtitle="Double Checked Locking"
+class Singleton {
+  private static volatile Singleton instance;
+
+  public static Singleton getInstance() {
+    Singleton localInstance = instance;
+    if (localInstance == null) {
+      synchronized (Singleton.class) {
+        localInstance = instance;
+        if (localInstance == null)
+          instance = localInstance = new Singleton();
+      }
+    }
+  }
+}
+```
+
+```js title="Good singleton factory" subtitle="Initialization-on-demand holder"
+class Singleton {
+  private Singleton() {}
+
+  private static class Holder {
+    static final Singleton INSTANCE = new Singleton();
+  }
+
+  public static Singleton getInstance() {
+    return Holder.INSTANCE;
+  }
+}
+```
+
+```js title="Good singleton factory" subtitle="Kotlin"
+val singleton: Singleton by lazy(LazyThreadSafetyMode.PUBLICATION) {
+  Singleton()
+}
+```
+
+</CodeSurfer>
+
+---
+
+# Lazy Static Final Fields
+
+## JEP Draft
+
+### https://openjdk.java.net/jeps/8209964
+
+<!--
+private final static Logger LOGGER = Logger.getLogger("org.Example");
+-->
+
+---
+
+<CodeSurfer>
+
+```js title="JEP draft: Lazy Static Final Fields"
+class Singleton {
+  lazy static final Singleton INSTANCE = new Singleton();
+  // or maybe
+  const Singleton INSTANCE = new Singleton();
+}
+```
+
+
+```js title="There is more"
+/* Java 11 (JEP 309): Dynamic Class-File Constants */
+
+/* Java 12 (JEP 334): JVM Constants API */
+
+/* JEP 303: Intrinsics for the LDC and INVOKEDYNAMIC Instructions */
+```
+
+</CodeSurfer>
+
+---
+
+<CodeSurfer>
+
+```js title="Takeaways"
+
+/*
+
+New powerful Java and JVM features,
+such as dynamic constants, now arrive very quickly,
+opening possibilities for many other features,
+not only for the Java and JVM,
+but also for other languages.
+
+Don't wait and don't be afraid to try them out
+and provide feedback before LTS release.
+
+*/
+```
+
+</CodeSurfer>
+
+---
+
+import end_image from './images/end.png'
+
+<Image src={end_image} />
